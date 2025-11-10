@@ -6,6 +6,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
+import os
 from math import pi
 from scipy.stats import zscore
 
@@ -65,12 +66,15 @@ labels = kmeans.fit_predict(X)
 df['cluster'] = labels
 
 # --- Visualizations ---
+# ensure outputs directory exists
+outputs_dir = "outputs"
+os.makedirs(outputs_dir, exist_ok=True)
 # PCA scatter
 plt.figure(figsize=(8,6))
 for c in np.unique(labels):
     mask = labels == c
     plt.scatter(X_pca[mask,0], X_pca[mask,1], label=f"Cluster {c}", s=30)
-plt.legend(); plt.title("PCA projection of clusters"); plt.grid(True); plt.show()
+plt.legend(); plt.title("PCA projection of clusters"); plt.grid(True); plt.savefig(os.path.join(outputs_dir, "pca_clusters.png"), dpi=150, bbox_inches="tight"); plt.show()
 
 # t-SNE scatter (costly but informative)
 tsne = TSNE(n_components=2, perplexity=30, learning_rate=200, random_state=42, init='pca')
@@ -79,12 +83,12 @@ plt.figure(figsize=(8,6))
 for c in np.unique(labels):
     mask = labels == c
     plt.scatter(X_tsne[mask,0], X_tsne[mask,1], label=f"Cluster {c}", s=30)
-plt.legend(); plt.title("t-SNE projection of clusters"); plt.grid(True); plt.show()
+plt.legend(); plt.title("t-SNE projection of clusters"); plt.grid(True); plt.savefig(os.path.join(outputs_dir, "tsne_clusters.png"), dpi=150, bbox_inches="tight"); plt.show()
 
 # --- Cluster profiling ---
 cluster_profiles = df.groupby('cluster')[df_numeric.columns].mean()
 cluster_counts = df['cluster'].value_counts().sort_index()
-cluster_profiles.to_csv("cluster_profiles.csv")
+cluster_profiles.to_csv(os.path.join(outputs_dir, "cluster_profiles.csv"))
 
 # --- Personas: z-score within each cluster to identify salient highs/lows ---
 profiles_z_values = zscore(cluster_profiles, axis=1) # Calculate z-scores across features for each cluster
@@ -99,7 +103,7 @@ for i, c in enumerate(cluster_profiles.index):
         "low_features": low_feats,
         "summary": f"High on {', '.join(high_feats)[:120]} | Low on {', '.join(low_feats)[:120]}"
     }
-pd.DataFrame.from_dict(personas, orient='index').to_csv("personas_summary.csv")
+pd.DataFrame.from_dict(personas, orient='index').to_csv(os.path.join(outputs_dir, "personas_summary.csv"))
 
 
 # --- Radar chart helper (plot up to top 6 variance features) ---
@@ -119,7 +123,7 @@ def make_radar(values, categories, title):
     ax.plot(angles, vals, linewidth=2)
     ax.fill(angles, vals, alpha=0.25)
     ax.set_title(title)
-    plt.show()
+    plt.savefig(os.path.join(outputs_dir, f\"radar_cluster_{title.split()[1]}.png\"), dpi=150, bbox_inches=\"tight\"); plt.show()
 
 for c in cluster_profiles.index:
     make_radar(cluster_profiles.loc[c, top_features], top_features, f"Cluster {c} (n={cluster_counts.loc[c]})")
@@ -148,6 +152,6 @@ risk_scores = {c: 1 - norm[i] for i,c in enumerate(score_indicators.keys())}
 print("Risk scores per cluster (0 low -> 1 high):", risk_scores)
 
 # --- Save labeled dataset ---
-df.to_csv("Quiet_Quitting_Clusters_250_labeled.csv", index=False)
+df.to_csv(os.path.join(outputs_dir, "Quiet_Quitting_Clusters_250_labeled.csv"), index=False)
 
 

@@ -34,7 +34,6 @@ data/private/
 data/interim/
 data/external/
 reports/
-outputs/
 *.sqlite
 *.db
 *.h5
