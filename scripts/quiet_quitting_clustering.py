@@ -11,7 +11,8 @@ from math import pi
 from scipy.stats import zscore
 
 # --- Load dataset ---
-file_path = "/content/Quiet_Quitting_In_Academia.xlsx"
+# Default to Excel file in repository root
+file_path = "Quiet_Quitting_In_Academia.xlsx"
 df = pd.read_excel(file_path)
 
 # --- Inspect, select numeric features ---
