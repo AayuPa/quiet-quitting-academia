@@ -111,6 +111,40 @@ pd.DataFrame.from_dict(personas, orient='index').to_csv(os.path.join(outputs_dir
 variances = df_numeric.var().sort_values(ascending=False)
 top_features = variances.head(6).index.tolist()
 
+# Mapping for compact attribute names; extend as needed
+ATTRIBUTE_RENAMES = {
+    "On average, how long does it take you to provide feedback on major student assignments?": "Time Taken to provide feedback",
+    # Add more exact mappings below as needed:
+    # "Full verbose question here": "Short Label",
+}
+
+def compact_label(name: str) -> str:
+    """Return a compact display label for a verbose attribute name."""
+    if name in ATTRIBUTE_RENAMES:
+        return ATTRIBUTE_RENAMES[name]
+    short = name.strip().replace("?", "")
+    # Common phrase simplifications
+    replacements = [
+        ("On average, ", ""),
+        ("How long", "Time"),
+        ("how long", "Time"),
+        ("provide feedback", "provide feedback"),
+        ("major student assignments", "major assignments"),
+        ("students", "students"),
+        ("student", "student"),
+        ("Work-Life Balance", "Work-Life Balance"),
+        ("work life", "Work-Life"),
+        ("work-life", "Work-Life"),
+        ("satisfaction", "satisfaction"),
+    ]
+    for a, b in replacements:
+        short = short.replace(a, b)
+    # Collapse multiple spaces and cap length
+    short = " ".join(short.split())
+    if len(short) > 40:
+        short = short[:37].rstrip() + "..."
+    return short
+
 def make_radar(values, categories, title):
     N = len(categories)
     angles = [n / float(N) * 2 * pi for n in range(N)]
@@ -120,12 +154,11 @@ def make_radar(values, categories, title):
     plt.figure(figsize=(6,6))
     ax = plt.subplot(111, polar=True)
     ax.set_xticks(angles[:-1])
-    ax.set_xticklabels(categories)
+    compact_categories = [compact_label(c) for c in categories]
+    ax.set_xticklabels(compact_categories)
     ax.plot(angles, vals, linewidth=2)
     ax.fill(angles, vals, alpha=0.25)
-    # compact, two-line title and smaller font for readability
-    compact_title = title.replace(" (n=", "\n(n=")
-    ax.set_title(compact_title, fontsize=10, pad=10)
+    ax.set_title(title)
     plt.savefig(os.path.join(outputs_dir, f"radar_cluster_{title.split()[1]}.png"), dpi=150, bbox_inches="tight"); plt.show()
 
 for c in cluster_profiles.index:
