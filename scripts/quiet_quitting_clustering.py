@@ -111,7 +111,7 @@ pd.DataFrame.from_dict(personas, orient='index').to_csv(os.path.join(outputs_dir
 variances = df_numeric.var().sort_values(ascending=False)
 top_features = variances.head(6).index.tolist()
 
-def make_radar(values, categories, title):
+def make_radar(values, categories, title, outfile):
     N = len(categories)
     angles = [n / float(N) * 2 * pi for n in range(N)]
     angles += angles[:1]
@@ -121,13 +121,21 @@ def make_radar(values, categories, title):
     ax = plt.subplot(111, polar=True)
     ax.set_xticks(angles[:-1])
     ax.set_xticklabels(categories)
+    # smaller labels for readability
+    ax.tick_params(axis='x', labelsize=8, pad=4)
+    ax.tick_params(axis='y', labelsize=8)
     ax.plot(angles, vals, linewidth=2)
     ax.fill(angles, vals, alpha=0.25)
-    ax.set_title(title)
-    plt.savefig(os.path.join(outputs_dir, f\"radar_cluster_{title.split()[1]}.png\"), dpi=150, bbox_inches=\"tight\"); plt.show()
+    ax.set_title(title, fontsize=10, pad=12)
+    plt.savefig(os.path.join(outputs_dir, outfile), dpi=150, bbox_inches="tight"); plt.show()
 
 for c in cluster_profiles.index:
-    make_radar(cluster_profiles.loc[c, top_features], top_features, f"Cluster {c} (n={cluster_counts.loc[c]})")
+    make_radar(
+        cluster_profiles.loc[c, top_features],
+        top_features,
+        f"Cluster {c} (n={cluster_counts.loc[c]})",
+        f"radar_cluster_{c}.png"
+    )
 
 # --- Heuristic risk scoring for quiet quitting ---
 # Identify columns with names matching engagement/protection vs burnout/risk
