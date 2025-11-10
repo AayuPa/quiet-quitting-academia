@@ -8,6 +8,7 @@ from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import os
 from math import pi
+import textwrap
 from scipy.stats import zscore
 
 # --- Load dataset ---
@@ -141,9 +142,9 @@ def compact_label(name: str) -> str:
         short = short.replace(a, b)
     # Collapse multiple spaces and cap length
     short = " ".join(short.split())
-    if len(short) > 40:
-        short = short[:37].rstrip() + "..."
-    return short
+    # Wrap to multiple short lines for compact display
+    wrapped = "\n".join(textwrap.wrap(short, width=16, break_long_words=False, break_on_hyphens=True))
+    return wrapped
 
 def make_radar(values, categories, title):
     N = len(categories)
@@ -156,9 +157,13 @@ def make_radar(values, categories, title):
     ax.set_xticks(angles[:-1])
     compact_categories = [compact_label(c) for c in categories]
     ax.set_xticklabels(compact_categories)
+    ax.tick_params(axis='x', labelsize=7, pad=2)
+    ax.tick_params(axis='y', labelsize=7)
     ax.plot(angles, vals, linewidth=2)
     ax.fill(angles, vals, alpha=0.25)
-    ax.set_title(title)
+    # Two-line compact title: move sample size to new line, smaller font
+    compact_title = title.replace(" (n=", "\n(n=")
+    ax.set_title(compact_title, fontsize=9, pad=8)
     plt.savefig(os.path.join(outputs_dir, f"radar_cluster_{title.split()[1]}.png"), dpi=150, bbox_inches="tight"); plt.show()
 
 for c in cluster_profiles.index:
