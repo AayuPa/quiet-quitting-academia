@@ -1,0 +1,50 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Data and outputs (keep large or sensitive data out of git)
+data/raw/
+data/private/
+data/interim/
+data/external/
+reports/
+outputs/
+*.sqlite
+*.db
+*.h5
+*.parquet
+*.feather
+*.csv.gz
+*.zip
+
+# VSCode and editors
+.vscode/
+.idea/
+
+
